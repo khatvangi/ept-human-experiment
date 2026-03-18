@@ -1,0 +1,175 @@
+{
+  "csv_dense": {
+    "source": "grokking_timeseries.csv",
+    "n_epochs": 11990,
+    "n_timepoints_original": 1200,
+    "n_timepoints_analyzed": 200,
+    "classification": {
+      "label": "unstable",
+      "confidence": "high",
+      "model_comparison": {
+        "best_model": "hmm",
+        "bic_continuous": -1186.5432959914956,
+        "bic_changepoint": -634.6859012470494,
+        "bic_hmm": -1284.7153863226984,
+        "delta_bic": -551.8573947444462,
+        "changepoint_idx": 31,
+        "jump_size": 0.9466632940560752,
+        "evidence_strength": "strong",
+        "sigmoid_rate": 0.7920281034920992,
+        "transition_width": 5.555358428066047
+      },
+      "psi_stats": {
+        "peak_idx": 30,
+        "peak_value": 0.10405839555466326,
+        "baseline_mean": 0.0009143901432493804,
+        "baseline_std": 0.004020414372891742,
+        "z_score": 25.655068313660156,
+        "spike_ratio": 113.80087177129892,
+        "duration": 18,
+        "localization": 0.09
+      },
+      "changepoints": [
+        21,
+        31
+      ],
+      "improvement": 0.45233494740695634,
+      "reasoning": "HMM preferred + 2 changepoints, state-switching pattern"
+    },
+    "psi": {
+      "peak_idx": 30,
+      "peak_value": 0.10405839555466326,
+      "baseline_mean": 0.0009143901432493804,
+      "baseline_std": 0.004020414372891742,
+      "z_score": 25.655068313660156,
+      "spike_ratio": 113.80087177129892,
+      "duration": 18,
+      "localization": 0.09
+    },
+    "changepoints": {
+      "changepoints": [
+        21,
+        31
+      ],
+      "n_changes": 2,
+      "segments": [
+        [
+          0,
+          21
+        ],
+        [
+          21,
+          31
+        ],
+        [
+          31,
+          200
+        ]
+      ],
+      "segment_means": [
+        0.001735019178817086,
+        0.15383330974727866,
+        0.997462277934396
+      ]
+    },
+    "model_comparison": {
+      "best_model": "hmm",
+      "bic_continuous": -1186.5432959914956,
+      "bic_changepoint": -634.6859012470494,
+      "bic_hmm": -1284.7153863226984,
+      "delta_bic": -551.8573947444462,
+      "changepoint_idx": 31,
+      "jump_size": 0.9466632940560752,
+      "evidence_strength": "strong",
+      "sigmoid_rate": 0.7920281034920992,
+      "transition_width": 5.555358428066047
+    },
+    "summary": "type=unstable | model=hmm(\u0394BIC=-551.9) | changepoints=2"
+  },
+  "data_grok_cos1_seed0": {
+    "source": "data_grok_cos1_seed0.json",
+    "n_epochs": 17500,
+    "n_timepoints": 37,
+    "classification": {
+      "label": "gradual",
+      "confidence": "high",
+      "model_comparison": {
+        "best_model": "continuous",
+        "bic_continuous": -138.79882920264592,
+        "bic_changepoint": -27.088569732707274,
+        "bic_hmm": -16.95947927089957,
+        "delta_bic": -111.71025946993865,
+        "changepoint_idx": 21,
+        "jump_size": 0.7879743289451807,
+        "evidence_strength": "strong",
+        "sigmoid_rate": 0.33132255222560847,
+        "transition_width": 13.280110183999474
+      },
+      "psi_stats": {
+        "peak_idx": 21,
+        "peak_value": 0.07178370800577688,
+        "baseline_mean": 0.013123673963189189,
+        "baseline_std": 0.012555229935325056,
+        "z_score": 4.672159278650185,
+        "spike_ratio": 5.469787515420942,
+        "duration": 12,
+        "localization": 0.32432432432432434
+      },
+      "changepoints": [
+        13,
+        23
+      ],
+      "improvement": 0.9638682252922423,
+      "reasoning": "wide transition: width=13 trials, monotone segments, improvement=0.964"
+    },
+    "psi": {
+      "peak_idx": 21,
+      "peak_value": 0.07178370800577688,
+      "baseline_mean": 0.013123673963189189,
+      "baseline_std": 0.012555229935325056,
+      "z_score": 4.672159278650185,
+      "spike_ratio": 5.469787515420942,
+      "duration": 12,
+      "localization": 0.32432432432432434
+    },
+    "changepoints": {
+      "changepoints": [
+        13,
+        23
+      ],
+      "n_changes": 2,
+      "segments": [
+        [
+          0,
+          13
+        ],
+        [
+          13,
+          23
+        ],
+        [
+          23,
+          37
+        ]
+      ],
+      "segment_means": [
+        0.029615443005453632,
+        0.3632609685744649,
+        0.9647357348890672
+      ]
+    },
+    "model_comparison": {
+      "best_model": "continuous",
+      "bic_continuous": -138.79882920264592,
+      "bic_changepoint": -27.088569732707274,
+      "bic_hmm": -16.95947927089957,
+      "delta_bic": -111.71025946993865,
+      "changepoint_idx": 21,
+      "jump_size": 0.7879743289451807,
+      "evidence_strength": "strong",
+      "sigmoid_rate": 0.33132255222560847,
+      "transition_width": 13.280110183999474
+    },
+    "summary": "type=gradual | model=continuous(\u0394BIC=-111.7) | changepoints=2"
+  }
+}

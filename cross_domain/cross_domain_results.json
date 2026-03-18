@@ -1,0 +1,234 @@
+[
+  {
+    "domain": "grokking",
+    "system": "neural_network",
+    "n_datapoints": 1200,
+    "classification": "abrupt",
+    "psi_z": 11.071176082807963,
+    "psi_spike_ratio": 58.59865033498947,
+    "psi_localization": 0.035,
+    "transition_width_frac": 0.02777679214033023,
+    "jump_size": 0.9466632940560752,
+    "n_changepoints": 2
+  },
+  {
+    "domain": "mouse_maze",
+    "system": "rodent",
+    "n_subjects": 19,
+    "per_mouse": [
+      {
+        "mouse_id": "B1",
+        "group": "rewarded",
+        "n_bouts": 104,
+        "label": "unstable",
+        "confidence": "high",
+        "psi_z": 4.7593479477251215,
+        "jump_size": 0.6378063461649476,
+        "mean_performance": 0.8006410256410255,
+        "final_performance": 0.6133333333333334
+      },
+      {
+        "mouse_id": "B2",
+        "group": "rewarded",
+        "n_bouts": 166,
+        "label": "unstable",
+        "confidence": "high",
+        "psi_z": 5.560043782571967,
+        "jump_size": 0.13088888888888883,
+        "mean_performance": 0.9682730923694777,
+        "final_performance": 0.9066666666666668
+      },
+      {
+        "mouse_id": "B3",
+        "group": "rewarded",
+        "n_bouts": 147,
+        "label": "unstable",
+        "confidence": "high",
+        "psi_z": 4.484058433165546,
+        "jump_size": 0.4291031653917097,
+        "mean_performance": 0.9274376417233559,
+        "final_performance": 0.8766666666666666
+      },
+      {
+        "mouse_id": "B4",
+        "group": "rewarded",
+        "n_bouts": 238,
+        "label": "unstable",
+        "confidence": "high",
+        "psi_z": 6.049263609142528,
+        "jump_size": 0.1088379862063581,
+        "mean_performance": 0.8753501400560224,
+        "final_performance": 0.71
+      },
+      {
+        "mouse_id": "B5",
+        "group": "unrewarded",
+        "n_bouts": 245,
+        "label": "unstable",
+        "confidence": "high",
+        "psi_z": 7.0594361422653975,
+        "jump_size": 0.08780193386266566,
+        "mean_performance": 0.9662585034013603,
+        "final_performance": 0.8733333333333334
+      },
+      {
+        "mouse_id": "B6",
+        "group": "unrewarded",
+        "n_bouts": 223,
+        "label": "unstable",
+        "confidence": "high",
+        "psi_z": 5.952439563707453,
+        "jump_size": 0.0618169412199735,
+        "mean_performance": 0.9378176382660687,
+        "final_performance": 0.9066666666666668
+      },
+      {
+        "mouse_id": "B7",
+        "group": "unrewarded",
+        "n_bouts": 204,
+        "label": "unstable",
+        "confidence": "high",
+        "psi_z": 5.597144664987579,
+        "jump_size": 0.10181159420289865,
+        "mean_performance": 0.9418300653594771,
+        "final_performance": 0.9066666666666668
+      },
+      {
+        "mouse_id": "C1",
+        "group": "rewarded",
+        "n_bouts": 173,
+        "label": "unstable",
+        "confidence": "high",
+        "psi_z": 5.679939751498185,
+        "jump_size": 0.12280069322569354,
+        "mean_performance": 0.9695568400770711,
+        "final_performance": 0.9066666666666668
+      },
+      {
+        "mouse_id": "C3",
+        "group": "rewarded",
+        "n_bouts": 339,
+        "label": "unstable",
+        "confidence": "high",
+        "psi_z": 6.467386719602884,
+        "jump_size": 0.1239255167174339,
+        "mean_performance": 0.9502458210422811,
+        "final_performance": 0.8166666666666667
+      },
+      {
+        "mouse_id": "C6",
+        "group": "rewarded",
+        "n_bouts": 150,
+        "label": "unstable",
+        "confidence": "high",
+        "psi_z": 4.912758845162349,
+        "jump_size": 0.1704401770125361,
+        "mean_performance": 0.9533333333333331,
+        "final_performance": 0.8699999999999999
+      },
+      {
+        "mouse_id": "C7",
+        "group": "rewarded",
+        "n_bouts": 135,
+        "label": "unstable",
+        "confidence": "high",
+        "psi_z": 4.302010325708822,
+        "jump_size": 0.12008886052059498,
+        "mean_performance": 0.9649382716049382,
+        "final_performance": 0.9066666666666668
+      },
+      {
+        "mouse_id": "C8",
+        "group": "rewarded",
+        "n_bouts": 164,
+        "label": "unstable",
+        "confidence": "high",
+        "psi_z": 5.633557501144486,
+        "jump_size": 0.13738738738738732,
+        "mean_performance": 0.9739837398373983,
+        "final_performance": 0.9066666666666668
+      },
+      {
+        "mouse_id": "C9",
+        "group": "rewarded",
+        "n_bouts": 127,
+        "label": "unstable",
+        "confidence": "high",
+        "psi_z": 5.6620637166451635,
+        "jump_size": 0.1575664333205693,
+        "mean_performance": 0.942782152230971,
+        "final_performance": 0.86
+      },
+      {
+        "mouse_id": "D3",
+        "group": "unrewarded",
+        "n_bouts": 245,
+        "label": "unstable",
+        "confidence": "high",
+        "psi_z": 6.267736128857907,
+        "jump_size": 0.0814889448427516,
+        "mean_performance": 0.954013605442177,
+        "final_performance": 0.9066666666666668
+      },
+      {
+        "mouse_id": "D4",
+        "group": "unrewarded",
+        "n_bouts": 319,
+        "label": "unstable",
+        "confidence": "high",
+        "psi_z": 6.7146718053668595,
+        "jump_size": 0.13192599584388354,
+        "mean_performance": 0.928526645768025,
+        "final_performance": 0.8066666666666664
+      },
+      {
+        "mouse_id": "D5",
+        "group": "unrewarded",
+        "n_bouts": 180,
+        "label": "unstable",
+        "confidence": "high",
+        "psi_z": 5.105041902501138,
+        "jump_size": 0.09753527475697599,
+        "mean_performance": 0.9496296296296295,
+        "final_performance": 0.8666666666666666
+      },
+      {
+        "mouse_id": "D7",
+        "group": "unrewarded",
+        "n_bouts": 150,
+        "label": "non_learner",
+        "confidence": "high",
+        "psi_z": 4.625687600348341,
+        "jump_size": 0.7429126140989716,
+        "mean_performance": 0.7128888888888889,
+        "final_performance": 0.26666666666666666
+      },
+      {
+        "mouse_id": "D8",
+        "group": "unrewarded",
+        "n_bouts": 109,
+        "label": "unstable",
+        "confidence": "low",
+        "psi_z": 4.2632802538641705,
+        "jump_size": 0.09927077313611443,
+        "mean_performance": 0.850764525993884,
+        "final_performance": 0.8166666666666667
+      },
+      {
+        "mouse_id": "D9",
+        "group": "unrewarded",
+        "n_bouts": 102,
+        "label": "unstable",
+        "confidence": "high",
+        "psi_z": 4.648971009315701,
+        "jump_size": 0.2454974943867999,
+        "mean_performance": 0.9254901960784313,
+        "final_performance": 0.8433333333333332
+      }
+    ],
+    "classification_counts": {
+      "unstable": 18,
+      "non_learner": 1
+    }
+  }
+]

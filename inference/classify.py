@@ -150,14 +150,21 @@ def _decide(mc, psi_stats, cp_result, improvement, T):
 
     # --- classification rules (order matters) ---
 
-    # UNSTABLE: HMM wins OR multiple changepoints with non-monotone segments
-    # also check: HMM with well-separated states suggests switching
-    hmm_separated = (mc["best_model"] == "hmm" and
-                     mc.get("bic_hmm", float("inf")) < mc.get("bic_continuous", float("inf")))
+    # OVERRIDE: if segments are monotone AND there's a massive Ψ spike,
+    # this is abrupt even if HMM wins (grokking has 3 monotone regimes).
+    # HMM wins because it captures the plateau-transition-plateau structure
+    # better than a single step, but the transition is still abrupt.
+    if is_monotone and has_strong_spike and has_large_jump and is_sharp_sigmoid:
+        return ABRUPT, "high", (
+            f"monotone trajectory with sharp transition: "
+            f"width={trans_width:.0f}, Ψ z={psi_z:.1f}, jump={jump:.3f}, "
+            f"segments={[f'{m:.2f}' for m in seg_means]}"
+        )
 
-    if hmm_wins and has_multi_cp:
+    # UNSTABLE: HMM wins OR multiple changepoints with non-monotone segments
+    if hmm_wins and has_multi_cp and not is_monotone:
         return UNSTABLE, "high", (
-            f"HMM preferred + {n_cp} changepoints, state-switching pattern"
+            f"HMM preferred + {n_cp} non-monotone changepoints, state-switching"
         )
     if hmm_wins and not is_monotone:
         return UNSTABLE, "medium", (
