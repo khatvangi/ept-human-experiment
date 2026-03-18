@@ -234,20 +234,35 @@
 
     <!-- consent -->
     <div id="screen-consent" class="screen active">
-      <h1>Pattern Learning Study</h1>
-      <p>Thank you for participating in this research study on how people learn hidden patterns.</p>
-      <h2>What you'll do</h2>
-      <ul>
-        <li>View sequences of letters and decide if they follow a hidden rule</li>
-        <li>You'll get feedback at first, then we'll test what you learned</li>
-        <li>The whole study takes about <strong style="color:var(--text)">25-35 minutes</strong></li>
-      </ul>
-      <h2>Your data</h2>
-      <ul>
-        <li>We record your responses, timing, and self-reports</li>
-        <li>All data is de-identified and may be shared publicly for research</li>
-        <li>You can withdraw at any time without penalty</li>
-      </ul>
+      <h1>Informed Consent to Participate in Research</h1>
+      <div style="background:var(--surface);border-radius:var(--radius);padding:1.5rem;max-height:55vh;overflow-y:auto;font-size:0.9rem;line-height:1.7;">
+        <p style="color:var(--text);font-weight:500;margin-bottom:0.5rem;">Title: Learning Transitions in Pattern Recognition</p>
+
+        <p><strong style="color:var(--accent);">Overview</strong></p>
+        <p>You are being asked to take part in a research study. The purpose is to investigate how people learn to recognize hidden patterns in letter sequences, and whether moments of sudden understanding have measurable signatures in behavior.</p>
+
+        <p><strong style="color:var(--accent);">What you will do</strong></p>
+        <p>You will complete a 25-30 minute online task: viewing letter sequences, deciding whether each follows a hidden rule, rating your confidence every 10 trials, and answering a brief survey at the end. You may also press a button if/when you feel you understand the pattern.</p>
+
+        <p><strong style="color:var(--accent);">Voluntary participation</strong></p>
+        <p>Your participation is voluntary. You do not have to participate and may stop at any time. There will be no penalties or loss of benefits if you do not participate or decide to stop. Your decision will not affect your grade, class standing, or relationship with the university. If extra credit is offered, an equivalent alternative assignment is available.</p>
+
+        <p><strong style="color:var(--accent);">Risks and benefits</strong></p>
+        <p>This research is considered minimal risk — the same as risks you face in daily life. You may experience mild frustration if the patterns are difficult, similar to a puzzle game. You will gain experience participating in cognitive science research.</p>
+
+        <p><strong style="color:var(--accent);">Data collection</strong></p>
+        <p>We collect: your responses (pattern judgments), response times, confidence ratings, self-reported insight moments, and brief survey responses (age, perceived difficulty, strategy description). Your data is identified by a randomly generated code, not your name. We do NOT collect your name, email, IP address, or any personally identifying information.</p>
+
+        <p><strong style="color:var(--accent);">Data sharing</strong></p>
+        <p>De-identified data may be shared publicly for scientific transparency (e.g., on the Open Science Framework or in a data repository accompanying a publication). No identifying information will be included.</p>
+
+        <p><strong style="color:var(--accent);">Privacy</strong></p>
+        <p>It is possible, although unlikely, that unauthorized individuals could gain access to your responses because you are responding online. Confidentiality will be maintained to the degree permitted by the technology used. No guarantees can be made regarding the interception of data sent via the Internet. Your participation involves risks similar to everyday use of the Internet.</p>
+
+        <p><strong style="color:var(--accent);">Contact</strong></p>
+        <p>Questions about this study: contact the Principal Investigator at the email provided in your recruitment materials. Questions about your rights as a participant: contact the university IRB.</p>
+      </div>
+      <p style="font-size:0.9rem;color:var(--text);text-align:center;">By clicking below, I freely give my consent to take part in this study.<br>I am 18 years of age or older.</p>
       <div class="btn-group">
         <button class="btn btn-primary" onclick="startExperiment()">I consent — start the study</button>
       </div>
@@ -454,7 +469,7 @@
           showScreen('complete');
 
           // submit data
-          const apiUrl = window.location.origin + '/api/submit';
+          const apiUrl = 'https://thebeakers.com/api/submit';
           experiment.submitData(apiUrl).then(ok => {
             if (!ok) {
               // save backup to local storage
