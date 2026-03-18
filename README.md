@@ -1,21 +1,11 @@
-# transition signatures in human learning
+# learning-transition-inference
 
-a domain-agnostic framework for detecting abrupt transitions in learning curves,
-with an Artificial Grammar Learning experiment as the first human instantiation.
+a domain-agnostic framework for detecting transition signatures in learning
+trajectories, applied across neural networks (grokking), rodent maze learning,
+and human cognition (AGL experiment).
 
-part of the Epistemic Phase Transition (EPT) research program, which finds
-common transition signatures across neural networks (grokking), animal learning,
-and human cognition.
-
-## core idea
-
-the `inference/` module takes ANY time-series of learning performance and
-answers: did this learner transition abruptly or gradually? did the transition
-persist? do multiple measurement channels agree on timing?
-
-the same code runs on grokking accuracy curves, zebra finch song trajectories,
-rodent maze learning, and human AGL data. that's what makes the cross-domain
-claim defensible.
+`inference/` is the reusable core. `tasks/agl/` is the current human-data adapter.
+`cross_domain/` contains empirical results from grokking (60 runs) and mouse maze (19 mice).
 
 ## quick start
 
@@ -25,8 +15,14 @@ pip install -r requirements.txt
 # validate the inference module on synthetic learners
 python simulation/validate_inference.py
 
-# run the AGL experiment analysis (once data is collected)
-python analysis/analyze_ept_human.py data/
+# run cross-domain analysis (grokking + mouse maze)
+python cross_domain/analyze_all.py
+
+# analyze grokking dose-response sweep (60 runs)
+python cross_domain/grokking/analyze_sweep.py
+
+# run the AGL experiment analysis (once human data is collected)
+python tasks/agl/analysis/analyze_agl.py data/
 ```
 
 ## directory structure
@@ -37,31 +33,29 @@ inference/                  — THE CORE: domain-agnostic transition detection
   changepoint.py            — PELT + Bayesian online changepoint detection
   model_compare.py          — continuous vs changepoint vs HMM (BIC comparison)
   classify.py               — learner type classification (abrupt/gradual/unstable/non-learner)
-  persistence.py            — post-transition stability tests (hysteresis analog)
+  persistence.py            — post-transition stability tests
   convergence.py            — cross-channel alignment with permutation test
   pipeline.py               — unified detect_transitions() interface
 
+cross_domain/               — empirical results across domains
+  grokking/                 — 60 runs (10 seeds × 6 WD), dose-response confirmed
+  mouse_maze/               — 19 mice from Rosenberg et al. 2021
+
 simulation/                 — synthetic validation
   synthetic_learners.py     — 5 learner types with known ground truth
-  validate_inference.py     — recovery test (proves inference isn't circular)
+  validate_inference.py     — recovery test (76% overall, 95% abrupt)
 
-tasks/agl/                  — (TODO) human AGL experiment
-  web/                      — web experiment code (grammars.js, experiment.js)
-  analysis/                 — AGL-specific analysis using inference/
-
-ept_theory_docs/            — EPT theoretical framework
-  FORMAL_PROPOSITIONS.md    — Ψ, F definitions, 4 transition signatures
-  THEOREM_DEVELOPMENT.md    — mathematical formalism
-  KRAMERS_CONNECTION.md     — barrier-crossing kinetics
-  EVIDENCE_SCORECARD.md     — cross-domain evidence inventory
-  ...
+tasks/agl/                  — human AGL experiment
+  web/                      — complete web experiment (index.html, grammars.js, experiment.js)
+  analysis/analyze_agl.py   — thin adapter: loads AGL JSON → inference pipeline
 
 docs/                       — experiment design and literature
-  EXPERIMENT_DESIGN.md      — AGL experiment protocol
+  EXPERIMENT_DESIGN.md      — AGL protocol with transition-signature predictions
   LITERATURE_REVIEW.md      — cross-domain literature review
 
-scispace_data/              — literature search data (230 files, bibliographic)
+ept_theory_docs/            — EPT theoretical framework
 recruitment/                — consent form, flyer, Prolific description
+scispace_data/              — literature search data (230 files, bibliographic)
 ```
 
 ## inference module
@@ -95,50 +89,54 @@ print(result["convergence"])              # do channels agree on timing?
 
 ### validation
 
-synthetic learner recovery (n=75, 15 per type):
+synthetic learner recovery (n=100, 20 per type):
 
 | type | recovery rate |
 |------|--------------|
-| abrupt | ~87% |
-| gradual | ~87% |
-| non_learner | ~93% |
-| unstable | ~13% (inherently ambiguous at low switch rates) |
-| **overall** | **~73%** |
+| abrupt | 95% |
+| gradual | 80% |
+| non_learner | 100% |
+| unstable | 25% (inherently ambiguous at low switch rates) |
+| **overall** | **76%** |
 
-false-aha detection via convergence: 0.29 (false) vs 0.58 (true abrupt).
+false-aha detection via convergence: 0.38 (false) vs 0.58 (true abrupt).
 
-## transition signatures tested
+## cross-domain results
 
-| # | signature | operational definition | inference method |
-|---|-----------|----------------------|-----------------|
-| S1 | abruptness | Ψ spike + changepoint model wins + large jump | model_compare + psi |
-| S2 | persistence | transfer accuracy > pre-transition baseline, controlling for learning ability | persistence (controlled) |
-| S3 | convergence | accuracy, confidence, RT changepoints within ±5 trials | convergence (permutation) |
-| S4 | dose-response | transition rate varies with task difficulty | cohort-level analysis |
+| domain | system | N | classification | Ψ z-score |
+|--------|--------|---|---------------|-----------|
+| grokking | neural network | 60 runs | dose-response: 0-60% abrupt by WD | 14.3 ± 11.4 |
+| mouse maze | rodent | 19 mice | 95% unstable (state-switching) | 3-7 |
+| human AGL | human | pending | ? | experiment ready |
 
-note: these are "transition signatures," not "phase transition proof." the inference
-layer measures behavioral signatures. the EPT interpretation maps them to phase-transition
-physics. the two are deliberately separated.
+### grokking dose-response (60 runs)
+
+| weight decay | grokked | abrupt rate |
+|---|---|---|
+| 0.00 | 1/10 (10%) | 0% |
+| 0.01 | 2/10 (20%) | 0% |
+| 0.03 | 10/10 (100%) | 30% |
+| 0.10 | 10/10 (100%) | 40% |
+| 0.30 | 10/10 (100%) | 0% (too fast to detect) |
+| 1.00 | 10/10 (100%) | 60% |
 
 ## what's done vs TODO
 
 done:
-- [x] inference module (6 files, ~800 lines)
-- [x] synthetic learner generators (5 types)
-- [x] validation script (73% recovery, false-aha detection works)
-- [x] experiment design document
-- [x] grammar engine + trial engine
-- [x] recruitment materials
-- [x] EPT theory documents
+- [x] inference module (7 files, 1400 lines)
+- [x] synthetic validation (76% recovery)
+- [x] grokking 60-run sweep with dose-response
+- [x] mouse maze reanalysis (19 mice)
+- [x] AGL web experiment UI
+- [x] AGL analysis adapter (inference-based)
+- [x] experiment design with transition-signature predictions
+- [x] claim language rewritten (signatures, not phase transitions)
 
 TODO:
-- [ ] cross-domain reanalysis (apply inference/ to grokking, animal, vocab data)
-- [ ] web UI for AGL experiment
-- [ ] backend API for data submission
+- [ ] deploy web experiment (thebeakers.com/study/)
+- [ ] collect human data (60-90 students, 25-30 min each)
 - [ ] IRB protocol
 - [ ] OSF pre-registration
-- [ ] pilot test
-- [ ] data dictionary
 
 ## license
 
