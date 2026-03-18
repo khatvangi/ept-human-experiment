@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pattern Learning Study</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #242836;
+      --text: #e2e4e9;
+      --text-dim: #8b8fa3;
+      --accent: #6ee7b7;
+      --accent-dim: #34d399;
+      --correct: #4ade80;
+      --incorrect: #f87171;
+      --warning: #fbbf24;
+      --radius: 12px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'IBM Plex Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container {
+      max-width: 640px;
+      width: 100%;
+      padding: 2rem;
+    }
+
+    /* ─── screens ─── */
+    .screen { display: none; }
+    .screen.active { display: flex; flex-direction: column; gap: 1.5rem; }
+
+    h1 { font-size: 1.8rem; font-weight: 600; line-height: 1.3; }
+    h2 { font-size: 1.3rem; font-weight: 500; color: var(--accent); }
+    p, li { font-size: 1rem; line-height: 1.6; color: var(--text-dim); }
+
+    ul { padding-left: 1.5rem; }
+    li { margin-bottom: 0.5rem; }
+
+    /* ─── buttons ─── */
+    .btn {
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 500;
+      padding: 0.8rem 2rem;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: var(--bg);
+    }
+    .btn-primary:hover { background: var(--accent-dim); transform: translateY(-1px); }
+
+    .btn-secondary {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid #3a3f52;
+    }
+    .btn-secondary:hover { background: #2d3244; }
+
+    .btn-response {
+      font-size: 1.1rem;
+      padding: 1rem 2.5rem;
+      min-width: 180px;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    /* ─── trial display ─── */
+    .string-display {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 3rem;
+      font-weight: 500;
+      text-align: center;
+      padding: 2rem;
+      background: var(--surface);
+      border-radius: var(--radius);
+      letter-spacing: 0.3em;
+      min-height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ─── feedback flash ─── */
+    .feedback {
+      text-align: center;
+      font-size: 1.2rem;
+      font-weight: 600;
+      padding: 0.6rem;
+      border-radius: var(--radius);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .feedback.show { opacity: 1; }
+    .feedback.correct { color: var(--correct); background: rgba(74,222,128,0.1); }
+    .feedback.incorrect { color: var(--incorrect); background: rgba(248,113,113,0.1); }
+
+    /* ─── aha button ─── */
+    .aha-btn {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 500;
+      padding: 0.7rem 1.2rem;
+      background: var(--surface2);
+      color: var(--warning);
+      border: 2px solid var(--warning);
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.2s;
+      z-index: 100;
+      display: none;
+    }
+    .aha-btn:hover { background: rgba(251,191,36,0.15); transform: scale(1.05); }
+    .aha-btn.pressed {
+      background: var(--warning);
+      color: var(--bg);
+      animation: aha-pulse 0.5s ease;
+    }
+    @keyframes aha-pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+      100% { transform: scale(1); }
+    }
+
+    /* ─── progress bar ─── */
+    .progress-bar {
+      width: 100%;
+      height: 4px;
+      background: var(--surface);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      transition: width 0.3s ease;
+    }
+
+    /* ─── status line ─── */
+    .status {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      color: var(--text-dim);
+    }
+
+    /* ─── confidence slider ─── */
+    .confidence-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+    }
+    .confidence-modal.show { display: flex; }
+
+    .confidence-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 2rem;
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+    }
+    .confidence-card p { margin-bottom: 1rem; color: var(--text); }
+    .confidence-card input[type="range"] {
+      width: 100%;
+      margin: 1rem 0;
+      accent-color: var(--accent);
+    }
+    .confidence-value {
+      font-size: 2rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    /* ─── debrief form ─── */
+    .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
+    .form-group label { font-size: 0.9rem; color: var(--text); font-weight: 500; }
+    .form-group textarea, .form-group select, .form-group input {
+      font-family: inherit;
+      font-size: 1rem;
+      padding: 0.7rem;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid #3a3f52;
+      border-radius: 8px;
+    }
+    .form-group textarea { min-height: 80px; resize: vertical; }
+
+    /* ─── completion ─── */
+    .completion-code {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 2rem;
+      text-align: center;
+      padding: 1rem;
+      background: var(--surface);
+      border-radius: var(--radius);
+      color: var(--accent);
+      letter-spacing: 0.1em;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- consent -->
+    <div id="screen-consent" class="screen active">
+      <h1>Pattern Learning Study</h1>
+      <p>Thank you for participating in this research study on how people learn hidden patterns.</p>
+      <h2>What you'll do</h2>
+      <ul>
+        <li>View sequences of letters and decide if they follow a hidden rule</li>
+        <li>You'll get feedback at first, then we'll test what you learned</li>
+        <li>The whole study takes about <strong style="color:var(--text)">25-35 minutes</strong></li>
+      </ul>
+      <h2>Your data</h2>
+      <ul>
+        <li>We record your responses, timing, and self-reports</li>
+        <li>All data is de-identified and may be shared publicly for research</li>
+        <li>You can withdraw at any time without penalty</li>
+      </ul>
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="startExperiment()">I consent — start the study</button>
+      </div>
+    </div>
+
+    <!-- instructions -->
+    <div id="screen-instructions" class="screen">
+      <h1>How it works</h1>
+      <p>You'll see letter strings like <strong style="color:var(--text);font-family:'IBM Plex Mono',monospace">MXVR</strong> or <strong style="color:var(--text);font-family:'IBM Plex Mono',monospace">VTXR</strong>.</p>
+      <p>Some strings follow a hidden pattern. Others don't. Your job: decide which is which.</p>
+      <h2>Controls</h2>
+      <ul>
+        <li>Press <strong style="color:var(--correct)">Follows Pattern</strong> or <strong style="color:var(--incorrect)">Doesn't Follow</strong></li>
+        <li>You'll get feedback during learning (correct/incorrect)</li>
+        <li>Every 10 trials, rate how confident you feel</li>
+        <li>If you think you've figured it out, hit the <strong style="color:var(--warning)">AHA!</strong> button</li>
+      </ul>
+      <p>Don't worry if it's hard at first — that's normal. Just do your best.</p>
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="beginTrials()">Got it — let's start</button>
+      </div>
+    </div>
+
+    <!-- phase intro -->
+    <div id="screen-phase-intro" class="screen">
+      <h2 id="phase-title"></h2>
+      <p id="phase-message"></p>
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="continuePhase()">Continue</button>
+      </div>
+    </div>
+
+    <!-- trial -->
+    <div id="screen-trial" class="screen">
+      <div class="status">
+        <span id="trial-phase"></span>
+        <span id="trial-count"></span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+      <div class="string-display" id="string-display"></div>
+      <div class="feedback" id="feedback"></div>
+      <div class="btn-group">
+        <button class="btn btn-secondary btn-response" id="btn-yes" onclick="respond('grammatical')">Follows Pattern</button>
+        <button class="btn btn-secondary btn-response" id="btn-no" onclick="respond('ungrammatical')">Doesn't Follow</button>
+      </div>
+    </div>
+
+    <!-- debrief -->
+    <div id="screen-debrief" class="screen">
+      <h1>Almost done!</h1>
+      <p>Please answer a few questions about your experience.</p>
+      <div class="form-group">
+        <label>Did you figure out the pattern?</label>
+        <select id="debrief-figured">
+          <option value="">— select —</option>
+          <option value="yes_fully">Yes, completely</option>
+          <option value="yes_partly">Yes, partly</option>
+          <option value="maybe">Maybe / not sure</option>
+          <option value="no">No</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>If you noticed any pattern, describe it:</label>
+        <textarea id="debrief-strategy" placeholder="e.g., 'strings always end with R...'"></textarea>
+      </div>
+      <div class="form-group">
+        <label>How difficult was the task? (1=very easy, 10=very hard)</label>
+        <input type="range" id="debrief-difficulty" min="1" max="10" value="5">
+        <span id="debrief-difficulty-val" style="text-align:center;color:var(--accent)">5</span>
+      </div>
+      <div class="form-group">
+        <label>Age</label>
+        <input type="number" id="debrief-age" min="18" max="99" placeholder="e.g., 21">
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="submitDebrief()">Submit</button>
+      </div>
+    </div>
+
+    <!-- complete -->
+    <div id="screen-complete" class="screen">
+      <h1>Thank you!</h1>
+      <p>Your data has been saved. Here's your completion code:</p>
+      <div class="completion-code" id="completion-code"></div>
+      <p>If you're on Prolific, enter this code to confirm your participation.</p>
+      <p style="font-size:0.85rem;margin-top:1rem">Your responses help us understand how people discover hidden structures in sequences. This research investigates whether learning moments have measurable signatures in behavior.</p>
+    </div>
+  </div>
+
+  <!-- aha button (floating) -->
+  <button class="aha-btn" id="aha-btn" onclick="recordAha()">💡 I think I get it!</button>
+
+  <!-- confidence modal -->
+  <div class="confidence-modal" id="confidence-modal">
+    <div class="confidence-card">
+      <p>How well do you understand the pattern right now?</p>
+      <div class="confidence-value" id="confidence-val">5</div>
+      <input type="range" id="confidence-slider" min="1" max="10" value="5"
+             oninput="document.getElementById('confidence-val').textContent=this.value">
+      <p style="font-size:0.8rem;color:var(--text-dim)">1 = no idea &nbsp;&nbsp; 10 = completely understand</p>
+      <button class="btn btn-primary" onclick="submitConfidence()" style="margin-top:1rem">OK</button>
+    </div>
+  </div>
+
+  <script src="grammars.js"></script>
+  <script src="experiment.js"></script>
+  <script>
+    // ─── globals ───
+    let experiment = null;
+    let pendingConfidence = false;
+    let buttonsEnabled = true;
+
+    // ─── get condition from URL or random assignment ───
+    function getCondition() {
+      const params = new URLSearchParams(window.location.search);
+      const c = params.get('condition');
+      if (c && ['easy', 'medium', 'hard'].includes(c)) return c;
+      // random assignment
+      const conditions = ['easy', 'medium', 'hard'];
+      return conditions[Math.floor(Math.random() * 3)];
+    }
+
+    // ─── screen management ───
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById('screen-' + id).classList.add('active');
+    }
+
+    // ─── start ───
+    function startExperiment() {
+      const condition = getCondition();
+      const params = new URLSearchParams(window.location.search);
+
+      experiment = new EPTExperiment({
+        condition: condition,
+        prolificPid: params.get('PROLIFIC_PID') || null,
+      });
+
+      // wire up events
+      experiment.onEvent = handleEvent;
+
+      showScreen('instructions');
+    }
+
+    function beginTrials() {
+      experiment.startPhase('practice');
+    }
+
+    function continuePhase() {
+      showScreen('trial');
+      document.getElementById('aha-btn').style.display =
+        (experiment.phase === 'learning') ? 'block' : 'none';
+      experiment.presentTrial();
+    }
+
+    // ─── event handler ───
+    function handleEvent(event, data) {
+      switch (event) {
+        case 'phase-intro':
+          document.getElementById('phase-title').textContent =
+            data.phase.charAt(0).toUpperCase() + data.phase.slice(1) + ' Phase';
+          document.getElementById('phase-message').textContent = data.message;
+          showScreen('phase-intro');
+          break;
+
+        case 'show-trial':
+          showScreen('trial');
+          document.getElementById('string-display').textContent = data.string;
+          document.getElementById('trial-phase').textContent = data.phase;
+          document.getElementById('trial-count').textContent = `Trial ${data.trialNum}`;
+          document.getElementById('feedback').className = 'feedback';
+
+          // progress
+          const total = experiment.currentTrials.length;
+          const pct = (experiment.currentTrialIndex / total) * 100;
+          document.getElementById('progress').style.width = pct + '%';
+
+          // enable buttons
+          buttonsEnabled = true;
+          document.getElementById('btn-yes').disabled = false;
+          document.getElementById('btn-no').disabled = false;
+
+          // check if confidence needed AFTER this trial
+          pendingConfidence = data.needsConfidence;
+          break;
+
+        case 'trial-result':
+          if (data.showFeedback) {
+            const fb = document.getElementById('feedback');
+            fb.textContent = data.correct ? 'Correct!' : 'Incorrect';
+            fb.className = 'feedback show ' + (data.correct ? 'correct' : 'incorrect');
+          }
+          break;
+
+        case 'aha-recorded':
+          const btn = document.getElementById('aha-btn');
+          btn.classList.add('pressed');
+          setTimeout(() => btn.classList.remove('pressed'), 600);
+          break;
+
+        case 'experiment-complete':
+          document.getElementById('aha-btn').style.display = 'none';
+          document.getElementById('completion-code').textContent = data.code;
+          showScreen('complete');
+
+          // submit data
+          const apiUrl = window.location.origin + '/api/submit';
+          experiment.submitData(apiUrl).then(ok => {
+            if (!ok) {
+              // save backup to local storage
+              console.log('saved backup to localStorage');
+            }
+          });
+          break;
+      }
+    }
+
+    // ─── response ───
+    function respond(response) {
+      if (!buttonsEnabled) return;
+      buttonsEnabled = false;
+      document.getElementById('btn-yes').disabled = true;
+      document.getElementById('btn-no').disabled = true;
+
+      if (pendingConfidence) {
+        // show confidence modal, then record response
+        document.getElementById('confidence-modal').classList.add('show');
+        document.getElementById('confidence-slider').value = 5;
+        document.getElementById('confidence-val').textContent = '5';
+        // store response to record after confidence
+        window._pendingResponse = response;
+      } else {
+        experiment.recordResponse(response);
+      }
+    }
+
+    function submitConfidence() {
+      const rating = parseInt(document.getElementById('confidence-slider').value);
+      document.getElementById('confidence-modal').classList.remove('show');
+      experiment.recordResponse(window._pendingResponse, rating);
+      pendingConfidence = false;
+    }
+
+    function recordAha() {
+      if (experiment && experiment.phase === 'learning') {
+        experiment.recordAha();
+      }
+    }
+
+    function submitDebrief() {
+      const data = {
+        figured_out: document.getElementById('debrief-figured').value,
+        strategy: document.getElementById('debrief-strategy').value,
+        difficulty: parseInt(document.getElementById('debrief-difficulty').value),
+        age: parseInt(document.getElementById('debrief-age').value) || null,
+      };
+      experiment.recordDebrief(data);
+    }
+
+    // ─── keyboard shortcuts ───
+    document.addEventListener('keydown', (e) => {
+      if (experiment && experiment.phase !== 'consent' && experiment.phase !== 'done') {
+        if (e.key === 'f' || e.key === 'F') respond('grammatical');
+        if (e.key === 'd' || e.key === 'D') respond('ungrammatical');
+        if (e.key === ' ') { e.preventDefault(); recordAha(); }
+      }
+    });
+
+    // ─── debrief difficulty slider ───
+    document.getElementById('debrief-difficulty').addEventListener('input', function() {
+      document.getElementById('debrief-difficulty-val').textContent = this.value;
+    });
+
+    // ─── handle debrief phase transition from experiment.js ───
+    const origAdvance = EPTExperiment.prototype.advancePhase;
+    EPTExperiment.prototype.advancePhase = function() {
+      const order = ["practice", "learning", "transfer", "oldtest", "debrief"];
+      const current = order.indexOf(this.phase);
+      if (order[current + 1] === 'debrief') {
+        this.phase = 'debrief';
+        document.getElementById('aha-btn').style.display = 'none';
+        showScreen('debrief');
+      } else {
+        origAdvance.call(this);
+      }
+    };
+  </script>
+</body>
+</html>
