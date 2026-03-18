@@ -271,19 +271,32 @@
     <!-- instructions -->
     <div id="screen-instructions" class="screen">
       <h1>How it works</h1>
-      <p>You'll see letter strings like <strong style="color:var(--text);font-family:'IBM Plex Mono',monospace">MXVR</strong> or <strong style="color:var(--text);font-family:'IBM Plex Mono',monospace">VTXR</strong>.</p>
-      <p>Some strings follow a hidden pattern. Others don't. Your job: decide which is which.</p>
-      <h2>Controls</h2>
+      <h2>Step 1: Study</h2>
+      <p>First, you'll see a set of letter strings one at a time. These strings all follow a <strong style="color:var(--text)">hidden pattern</strong>. Try to memorize them — pay attention to which letters appear and in what order.</p>
+      <h2>Step 2: Test</h2>
+      <p>Then, you'll see new strings and decide if each one follows the <strong style="color:var(--text)">same pattern</strong> as the ones you studied.</p>
       <ul>
         <li>Press <strong style="color:var(--correct)">Follows Pattern</strong> or <strong style="color:var(--incorrect)">Doesn't Follow</strong></li>
-        <li>You'll get feedback during learning (correct/incorrect)</li>
+        <li>You'll get feedback during the learning phase</li>
         <li>Every 10 trials, rate how confident you feel</li>
-        <li>If you think you've figured it out, hit the <strong style="color:var(--warning)">AHA!</strong> button</li>
+        <li>If you think you've figured out the rule, hit the <strong style="color:var(--warning)">AHA!</strong> button</li>
       </ul>
-      <p>Don't worry if it's hard at first — that's normal. Just do your best.</p>
+      <p>Don't worry if it's hard at first — that's normal.</p>
       <div class="btn-group">
-        <button class="btn btn-primary" onclick="beginTrials()">Got it — let's start</button>
+        <button class="btn btn-primary" onclick="beginExposure()">Got it — show me the strings</button>
       </div>
+    </div>
+
+    <!-- exposure phase (passive study) -->
+    <div id="screen-exposure" class="screen">
+      <div class="status">
+        <span>Study Phase</span>
+        <span id="exposure-count"></span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="exposure-progress"></div></div>
+      <p style="text-align:center;color:var(--text-dim);font-size:0.9rem;">Memorize this string. It follows the hidden pattern.</p>
+      <div class="string-display" id="exposure-display"></div>
+      <p style="text-align:center;color:var(--text-dim);font-size:0.85rem;">Each string is shown for 3 seconds.</p>
     </div>
 
     <!-- phase intro -->
@@ -407,6 +420,10 @@
       showScreen('instructions');
     }
 
+    function beginExposure() {
+      experiment.startExposure();
+    }
+
     function beginTrials() {
       experiment.startPhase('practice');
     }
@@ -421,6 +438,15 @@
     // ─── event handler ───
     function handleEvent(event, data) {
       switch (event) {
+        case 'show-exposure':
+          showScreen('exposure');
+          document.getElementById('exposure-display').textContent = data.string;
+          document.getElementById('exposure-count').textContent =
+            `${data.index + 1} of ${data.total}`;
+          document.getElementById('exposure-progress').style.width =
+            ((data.index + 1) / data.total * 100) + '%';
+          break;
+
         case 'phase-intro':
           document.getElementById('phase-title').textContent =
             data.phase.charAt(0).toUpperCase() + data.phase.slice(1) + ' Phase';

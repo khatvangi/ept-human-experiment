@@ -1,39 +1,47 @@
 /**
- * EPT Human Experiment — trial logic, timing, and data collection.
+ * AGL experiment — trial logic, timing, and data collection.
  *
- * manages the experiment flow:
- *   consent → instructions → practice → learning → transfer → debrief → submit
+ * flow: consent → instructions → EXPOSURE → practice → learning → transfer → oldtest → debrief
+ *
+ * exposure phase: show grammatical-only strings for passive study (classic Reber AGL).
+ * participants memorize the strings without knowing there's a hidden rule.
+ * then test phases probe whether they absorbed the pattern.
  *
  * all timing uses performance.now() for sub-millisecond precision.
- * data is stored locally and submitted to backend at completion.
  */
 
 class EPTExperiment {
   constructor(config) {
-    this.condition = config.condition || "medium"; // easy, medium, hard
+    this.condition = config.condition || "medium";
     this.participantId = config.participantId || this.generateId();
     this.prolificPid = config.prolificPid || null;
 
     // trial counts per phase
+    this.nExposure = 25;      // grammatical-only strings shown passively
+    this.exposureDuration = 3000; // ms per string during exposure
     this.nPractice = 10;
     this.nLearning = 100;
-    this.nTransfer = 40;  // novel strings, no feedback
-    this.nOldTest = 20;   // old strings, no feedback
+    this.nTransfer = 40;
+    this.nOldTest = 20;
     this.confidenceEvery = 10;
 
     // grammar
     this.grammar = GRAMMARS[this.condition];
 
-    // generate trial sets with different seeds for novelty
+    // generate exposure set: grammatical strings only, for passive study
+    this.exposureStrings = this.generateExposureSet(this.nExposure, 500);
+
+    // generate trial sets with different seeds
     this.practiceTrials = generateTrialSet(this.grammar, this.nPractice, 1000);
     this.learningTrials = generateTrialSet(this.grammar, this.nLearning, 2000);
     this.transferTrials = generateTrialSet(this.grammar, this.nTransfer, 3000);
     this.oldTestTrials = this.selectOldStrings(this.learningTrials, this.nOldTest);
 
     // state
-    this.phase = "consent"; // consent, instructions, practice, learning, transfer, oldtest, debrief, done
+    this.phase = "consent";
     this.currentTrialIndex = 0;
     this.currentTrials = [];
+    this.exposureIndex = 0;
 
     // data collection
     this.data = {
@@ -43,6 +51,7 @@ class EPTExperiment {
       grammar_name: this.grammar.name,
       start_time: new Date().toISOString(),
       demographics: {},
+      exposure_strings: [],  // record what was shown during exposure
       trials: [],
       aha_events: [],
       confidence_trajectory: [],
@@ -55,17 +64,60 @@ class EPTExperiment {
   }
 
   generateId() {
-    return "ept-" + Math.random().toString(36).substr(2, 9);
+    return "lti-" + Math.random().toString(36).substr(2, 9);
+  }
+
+  generateExposureSet(n, seed) {
+    // generate n grammatical strings for passive exposure
+    const rng = createRng(seed);
+    const allGram = generateAllStrings(this.grammar);
+    if (allGram.length === 0) return [];
+
+    const strings = [];
+    for (let i = 0; i < n; i++) {
+      strings.push(allGram[Math.floor(rng() * allGram.length)]);
+    }
+    return strings;
   }
 
   selectOldStrings(learningTrials, n) {
-    // pick n strings from learning phase (seen before)
     const rng = createRng(4000);
     const shuffled = [...learningTrials].sort(() => rng() - 0.5);
     return shuffled.slice(0, n).map((t) => ({
       ...t,
       source: "old_retest",
     }));
+  }
+
+  // ─────────────────────────────────────────────
+  // exposure phase (passive study, no response needed)
+  // ─────────────────────────────────────────────
+
+  startExposure() {
+    this.phase = "exposure";
+    this.exposureIndex = 0;
+    this.data.exposure_strings = [...this.exposureStrings];
+    this.presentExposureString();
+  }
+
+  presentExposureString() {
+    if (this.exposureIndex >= this.exposureStrings.length) {
+      // exposure done, move to practice
+      this.startPhase("practice");
+      return;
+    }
+
+    const str = this.exposureStrings[this.exposureIndex];
+    this.emit("show-exposure", {
+      string: str,
+      index: this.exposureIndex,
+      total: this.exposureStrings.length,
+    });
+
+    this.exposureIndex++;
+
+    // auto-advance after exposureDuration ms
+    setTimeout(() => this.presentExposureString(), this.exposureDuration);
   }
 
   // ─────────────────────────────────────────────
@@ -97,16 +149,15 @@ class EPTExperiment {
   showPhaseIntro(phase) {
     const intros = {
       practice:
-        "Let's practice! You'll see letter strings and decide if they follow the hidden pattern. You'll get feedback on each answer.",
+        "Now let's practice. You'll see letter strings and decide if they follow the same pattern as the ones you just studied. You'll get feedback on each answer.",
       learning:
-        "Now the real task begins. Keep judging the strings. Press the AHA button whenever you feel you understand the pattern!",
+        "Good. Now the main task begins. Keep classifying strings — you'll still get feedback. Press the AHA button whenever you feel you've figured out the pattern!",
       transfer:
-        "Great work! Now you'll see NEW strings from the same pattern. This time, there's no feedback — just do your best.",
+        "Great work! Now you'll see NEW strings. This time there's no feedback — just use what you've learned.",
       oldtest:
-        "Almost done! A few more strings to judge. No feedback.",
+        "Almost done! A few more strings to classify. No feedback.",
     };
 
-    // this would update the DOM — implementation depends on HTML structure
     this.emit("phase-intro", { phase, message: intros[phase] });
   }
 
@@ -124,7 +175,6 @@ class EPTExperiment {
     this.trialStartTime = performance.now();
     this.totalTrialNum++;
 
-    // check if confidence rating is needed
     const needsConfidence =
       this.phase === "learning" &&
       this.totalTrialNum > 0 &&
@@ -153,14 +203,13 @@ class EPTExperiment {
       source: trial.source,
       response: response,
       correct: correct,
-      rt_ms: Math.round(rt * 100) / 100, // 0.01ms precision
+      rt_ms: Math.round(rt * 100) / 100,
       feedback_shown: showFeedback,
       timestamp: new Date().toISOString(),
     };
 
     this.data.trials.push(trialData);
 
-    // confidence rating
     if (confidenceRating !== null) {
       this.data.confidence_trajectory.push({
         after_trial: this.totalTrialNum,
@@ -169,7 +218,6 @@ class EPTExperiment {
       });
     }
 
-    // emit for UI feedback
     this.emit("trial-result", {
       correct,
       showFeedback,
@@ -177,8 +225,6 @@ class EPTExperiment {
     });
 
     this.currentTrialIndex++;
-
-    // auto-advance to next trial after brief delay
     setTimeout(() => this.presentTrial(), showFeedback ? 1000 : 500);
   }
 
@@ -223,14 +269,10 @@ class EPTExperiment {
   // ─────────────────────────────────────────────
 
   finishExperiment() {
-    // generate completion code
-    const code = "EPT-" + Math.random().toString(36).substr(2, 6).toUpperCase();
+    const code = "LTI-" + Math.random().toString(36).substr(2, 6).toUpperCase();
     this.data.completion_code = code;
     this.data.end_time = new Date().toISOString();
-
-    // compute summary stats
     this.data.summary = this.computeSummary();
-
     this.phase = "done";
     this.emit("experiment-complete", { code, data: this.data });
   }
@@ -242,10 +284,10 @@ class EPTExperiment {
 
     const acc = (trials) =>
       trials.length > 0 ? trials.filter((t) => t.correct).length / trials.length : 0;
-
     const lastN = (trials, n) => trials.slice(-n);
 
     return {
+      n_exposure_strings: this.nExposure,
       learning_accuracy: Math.round(acc(learning) * 1000) / 1000,
       learning_last20_accuracy: Math.round(acc(lastN(learning, 20)) * 1000) / 1000,
       transfer_accuracy: Math.round(acc(transfer) * 1000) / 1000,
@@ -265,7 +307,7 @@ class EPTExperiment {
   }
 
   // ─────────────────────────────────────────────
-  // event system (connects to UI)
+  // event system
   // ─────────────────────────────────────────────
 
   emit(event, data) {
@@ -288,14 +330,12 @@ class EPTExperiment {
       return response.ok;
     } catch (e) {
       console.error("data submission failed:", e);
-      // fallback: save to localStorage
-      localStorage.setItem("ept_backup_" + this.participantId, JSON.stringify(this.data));
+      localStorage.setItem("lti_backup_" + this.participantId, JSON.stringify(this.data));
       return false;
     }
   }
 }
 
-// export
 if (typeof module !== "undefined") {
   module.exports = { EPTExperiment };
 }
