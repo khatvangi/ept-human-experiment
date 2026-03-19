@@ -97,6 +97,8 @@ class EPTExperiment {
     this.phase = "exposure";
     this.exposureIndex = 0;
     this.data.exposure_strings = [...this.exposureStrings];
+    this.data.exposure_timing = [];  // log actual display durations
+    this.lastExposureTime = performance.now();
     this.presentExposureString();
   }
 
@@ -106,6 +108,18 @@ class EPTExperiment {
       this.startPhase("practice");
       return;
     }
+
+    // log actual elapsed time since last string (detects tab-backgrounding)
+    const now = performance.now();
+    if (this.exposureIndex > 0) {
+      const actualDuration = now - this.lastExposureTime;
+      this.data.exposure_timing.push({
+        index: this.exposureIndex - 1,
+        actual_ms: Math.round(actualDuration * 10) / 10,
+        nominal_ms: this.exposureDuration,
+      });
+    }
+    this.lastExposureTime = now;
 
     const str = this.exposureStrings[this.exposureIndex];
     this.emit("show-exposure", {
@@ -117,6 +131,8 @@ class EPTExperiment {
     this.exposureIndex++;
 
     // auto-advance after exposureDuration ms
+    // note: setTimeout is throttled when tab is backgrounded — actual
+    // durations are logged above so we can detect and flag irregular timing
     setTimeout(() => this.presentExposureString(), this.exposureDuration);
   }
 

@@ -284,7 +284,7 @@ def generate_double_sigmoid(n_trials=100, base=0.45, mid1=0.65, ceiling=0.90,
 
     return {
         "accuracy": acc, "confidence": conf, "rt": rt, "transfer": transfer_acc,
-        "ground_truth": "abrupt",  # two-stage is still a transition-containing trajectory
+        "ground_truth": "gradual",  # two moderate steps = gradual overall (not sharp enough for abrupt)
         "params": {"base": base, "mid1": mid1, "ceiling": ceiling,
                    "t1": transition1, "t2": transition2, "noise": noise},
     }
@@ -308,6 +308,8 @@ def generate_cohort(n_per_type=20, n_trials=100, seed=42):
         ("non_learner", generate_non_learner),
         ("unstable", generate_unstable),
         ("false_aha", generate_false_aha),
+        ("power_law", generate_power_law),         # adversarial: out-of-model-family
+        ("double_sigmoid", generate_double_sigmoid), # adversarial: two-stage learning
     ]
 
     for type_name, gen_fn in generators:

@@ -46,6 +46,8 @@ def validate(n_per_type=30, n_trials=100, verbose=True):
         "non_learner": "non_learner",
         "unstable": "unstable",
         "false_aha": "gradual",  # accuracy is gradual; aha is metacognitive
+        "power_law": "gradual",  # adversarial: out-of-model-family, but still gradual
+        "double_sigmoid": "gradual",  # adversarial: two moderate steps, not sharp enough for abrupt
     }
 
     # run inference

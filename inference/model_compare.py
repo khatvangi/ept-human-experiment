@@ -41,13 +41,16 @@ class ContinuousModel:
         rate0 = 4.0 / T
         mid0 = T / 2.0
 
+        # fix sigma² at data variance during optimization to stabilize
+        # the objective surface. recompute profile likelihood at optimum for BIC.
+        sigma2_fixed = float(np.var(arr)) + 1e-10
+
         def neg_log_lik(params):
             base, ceiling, rate, midpoint = params
             pred = base + (ceiling - base) * expit(rate * (t - midpoint))
-            # gaussian likelihood
             residuals = arr - pred
-            sigma2 = np.mean(residuals ** 2) + 1e-10
-            nll = 0.5 * T * np.log(2 * np.pi * sigma2) + 0.5 * T
+            # use fixed sigma² for stable optimization landscape
+            nll = 0.5 * np.sum(residuals ** 2) / sigma2_fixed
             return nll
 
         with warnings.catch_warnings():
@@ -57,7 +60,11 @@ class ContinuousModel:
                               options={"maxiter": 2000, "xatol": 1e-6})
 
         self.params = result.x
-        self.nll = result.fun
+        # recompute profile NLL at optimum for BIC
+        pred = base0 + (result.x[1] - result.x[0]) * expit(result.x[2] * (t - result.x[3]))
+        pred = result.x[0] + (result.x[1] - result.x[0]) * expit(result.x[2] * (t - result.x[3]))
+        sigma2_profile = float(np.mean((arr - pred) ** 2)) + 1e-10
+        self.nll = 0.5 * T * np.log(2 * np.pi * sigma2_profile) + 0.5 * T
         return self
 
     def predict(self, T):
