@@ -65,8 +65,18 @@ def participant_to_canonical(p):
     if len(learning) < 20:
         return None
 
-    accuracy = np.array([t["correct"] for t in learning], dtype=float)
+    accuracy_raw = np.array([t["correct"] for t in learning], dtype=float)
     rt = np.array([t["rt_ms"] for t in learning], dtype=float)
+
+    # window binary accuracy into a continuous signal for inference.
+    # raw 0/1 per trial is too noisy for changepoint detection.
+    # use rolling mean with window=10 (matches confidence probe interval).
+    window = min(10, len(accuracy_raw) // 5)
+    if window >= 3:
+        kernel = np.ones(window) / window
+        accuracy = np.convolve(accuracy_raw, kernel, mode="same")
+    else:
+        accuracy = accuracy_raw
 
     # interpolate confidence to trial level
     # (confidence is sampled every 10 trials in the AGL design)
