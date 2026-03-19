@@ -61,7 +61,6 @@ class ContinuousModel:
 
         self.params = result.x
         # recompute profile NLL at optimum for BIC
-        pred = base0 + (result.x[1] - result.x[0]) * expit(result.x[2] * (t - result.x[3]))
         pred = result.x[0] + (result.x[1] - result.x[0]) * expit(result.x[2] * (t - result.x[3]))
         sigma2_profile = float(np.mean((arr - pred) ** 2)) + 1e-10
         self.nll = 0.5 * T * np.log(2 * np.pi * sigma2_profile) + 0.5 * T

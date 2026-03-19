@@ -83,10 +83,16 @@ def participant_to_canonical(p):
     conf_sparse = p.get("confidence_trajectory", [])
     confidence = _interpolate_confidence(conf_sparse, len(learning))
 
-    # transfer accuracy
+    # transfer accuracy — window same as learning for consistency
     transfer_acc = None
     if len(transfer) >= 5:
-        transfer_acc = np.array([t["correct"] for t in transfer], dtype=float)
+        transfer_raw = np.array([t["correct"] for t in transfer], dtype=float)
+        tw = min(10, len(transfer_raw) // 3)
+        if tw >= 3:
+            tk = np.ones(tw) / tw
+            transfer_acc = np.convolve(transfer_raw, tk, mode="same")
+        else:
+            transfer_acc = transfer_raw
 
     # aha trial (self-report marker)
     aha_trial = None

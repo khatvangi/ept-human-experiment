@@ -261,14 +261,13 @@ def generate_double_sigmoid(n_trials=100, base=0.45, mid1=0.65, ceiling=0.90,
     """
     adversarial: two-stage learning (e.g., learn chunks then learn rule).
     NOT in the model family (single sigmoid, single step).
-    should ideally be classified as abrupt if both transitions are sharp,
-    or gradual if both are slow.
+    rate=0.15 makes each step genuinely gradual (~30 trials wide).
     """
     rng = np.random.default_rng(seed)
     t = np.arange(n_trials, dtype=float)
 
-    sig1 = expit(0.5 * (t - transition1))
-    sig2 = expit(0.5 * (t - transition2))
+    sig1 = expit(0.15 * (t - transition1))
+    sig2 = expit(0.15 * (t - transition2))
     signal = base + (mid1 - base) * sig1 + (ceiling - mid1) * sig2
     acc = signal + rng.normal(0, noise, n_trials)
     acc = np.clip(acc, 0, 1)
