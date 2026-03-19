@@ -559,12 +559,16 @@
     }
 
     // ─── keyboard shortcuts ───
+    // only active during trial phases, not debrief (where user types in textareas)
     document.addEventListener('keydown', (e) => {
-      if (experiment && experiment.phase !== 'consent' && experiment.phase !== 'done') {
-        if (e.key === 'f' || e.key === 'F') respond('grammatical');
-        if (e.key === 'd' || e.key === 'D') respond('ungrammatical');
-        if (e.key === ' ') { e.preventDefault(); recordAha(); }
-      }
+      if (!experiment) return;
+      const trialPhases = ['practice', 'learning', 'transfer', 'oldtest'];
+      if (!trialPhases.includes(experiment.phase)) return;
+      // don't intercept if user is typing in an input/textarea
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+      if (e.key === 'f' || e.key === 'F') respond('grammatical');
+      if (e.key === 'd' || e.key === 'D') respond('ungrammatical');
+      if (e.key === ' ') { e.preventDefault(); recordAha(); }
     });
 
     // ─── debrief difficulty slider ───

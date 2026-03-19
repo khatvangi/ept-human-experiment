@@ -226,10 +226,14 @@ def analyze_cohort(participants):
               f"aha={n_aha}/{n} ({n_aha/n:.0%}), final_acc={mean_acc:.3f}")
         contingency.append([n_abrupt, n - n_abrupt])
 
-    if len(contingency) >= 2 and all(sum(row) > 0 for row in contingency):
-        chi2, p_val, dof, _ = stats.chi2_contingency(contingency)
-        print(f"\n  chi-squared (abrupt rate × condition): "
-              f"chi2={chi2:.3f}, p={p_val:.4f}, dof={dof}")
+    if len(contingency) >= 2:
+        # need nonzero expected frequencies for chi-squared
+        try:
+            chi2, p_val, dof, _ = stats.chi2_contingency(contingency)
+            print(f"\n  chi-squared (abrupt rate × condition): "
+                  f"chi2={chi2:.3f}, p={p_val:.4f}, dof={dof}")
+        except ValueError:
+            print(f"\n  chi-squared: insufficient data (some cells empty)")
 
     # ─── S3: persistence (controlled) ───
     print("\n" + "=" * 60)
