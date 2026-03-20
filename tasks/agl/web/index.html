@@ -268,6 +268,20 @@
       </div>
     </div>
 
+    <!-- commitment nudge -->
+    <div id="screen-commitment" class="screen">
+      <h1>Before we begin</h1>
+      <p style="color:var(--text);line-height:1.8;">This study is part of an active research project investigating how people discover hidden patterns — the kind of "aha" moment you may have experienced in chemistry or physics.</p>
+      <p style="color:var(--text);line-height:1.8;">Your responses are being used in a real scientific analysis. Each answer matters. Random or rushed responses make the data unusable and waste the opportunity.</p>
+      <p style="color:var(--text);line-height:1.8;">The task takes about <strong>25 minutes</strong>. Please find a quiet spot, stay on this tab, and give each string your honest best judgment.</p>
+      <div style="background:var(--surface);border-radius:var(--radius);padding:1.2rem;margin-top:0.5rem;">
+        <p style="color:var(--accent);text-align:center;font-weight:500;margin:0;">As a science student, you know that good data is the foundation of good research. Thank you for contributing yours.</p>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="showScreen('instructions')">I'll give it my full attention</button>
+      </div>
+    </div>
+
     <!-- instructions -->
     <div id="screen-instructions" class="screen">
       <h1>How it works</h1>
@@ -427,7 +441,7 @@
       // wire up events
       experiment.onEvent = handleEvent;
 
-      showScreen('instructions');
+      showScreen('commitment');
     }
 
     function beginExposure() {
